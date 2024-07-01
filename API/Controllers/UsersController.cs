@@ -1,16 +1,17 @@
-﻿using System.Collections.Immutable;
-using API.Data;
+﻿using API.Data;
 using API.Enteties;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 namespace API.Controllers;
 
-[ApiController]
-[Route("api/[controller]")]
-public class UsersController(DataContext context) : ControllerBase
+
+[Authorize]
+public class UsersController(DataContext context) : BaseApiController
 {
 
+    [AllowAnonymous]
     [HttpGet]
     public async Task<ActionResult<IEnumerable<AppUser>>> GetUsers()
     {
