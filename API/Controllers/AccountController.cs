@@ -10,18 +10,22 @@ using Microsoft.EntityFrameworkCore;
 
 namespace API.Controllers;
 
-public class AccountController(DataContext context, ITokenService tokenService) : BaseApiController
+public class AccountController(DataContext context, ITokenService tokenService, ILogger<AccountController> logger) : BaseApiController
 {
     [HttpPost("register")]
     public async Task<ActionResult<UserDTO>> Register(RegisterDto registerDto)
     {
         if (await UserExists(registerDto.Username)) return BadRequest("Username is taken!");
         using var hmac = new HMACSHA512();
-        var user = new AppUser()
+        var user = new AppUser
         {
             UserName = registerDto.Username.ToLower(),
             PasswordHash = hmac.ComputeHash(Encoding.UTF8.GetBytes(registerDto.Password)),
-            PasswordSalt = hmac.Key
+            PasswordSalt = hmac.Key,
+            Gender = registerDto.Gender,
+            City = registerDto.City,
+            Country = registerDto.Country,
+            KnownAs = registerDto.Knownas
         };
 
         context.Users.Add(user);
@@ -33,6 +37,7 @@ public class AccountController(DataContext context, ITokenService tokenService) 
             Token = token
         };
         return userDto;
+        return Ok();
     }
 
     [HttpPost("login")]
@@ -44,7 +49,7 @@ public class AccountController(DataContext context, ITokenService tokenService) 
         var computedHash = hmac.ComputeHash(Encoding.UTF8.GetBytes(loginDto.Username.ToLower()));
         for (int i = 0; i < computedHash.Length; i++)
         {
-            Console.WriteLine(computedHash[i]);
+            logger.LogInformation(computedHash[i].ToString());
             if (computedHash[i] != user.PasswordHash[i]) return BadRequest("Password does not match");
         }
         return new UserDTO

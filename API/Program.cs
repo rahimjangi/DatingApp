@@ -20,4 +20,19 @@ app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
 
+using var scope = app.Services.CreateScope();
+var servise = scope.ServiceProvider;
+try
+{
+    var context = servise.GetRequiredService<DataContext>();
+    await context.Database.MigrateAsync();
+    await Seed.SeedData(context);
+}
+catch (Exception ex)
+{
+    var logger = servise.GetRequiredService<ILogger<Program>>();
+    logger.LogError(ex, ex.Message);
+
+}
+
 app.Run();

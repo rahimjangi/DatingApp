@@ -1,5 +1,6 @@
 ﻿using System.Text;
 using API.Data;
+using API.Helpers;
 using API.Interfaces;
 using API.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -20,6 +21,8 @@ public static class ApplicationServiceExtentions
         services.AddControllers();
         services.AddCors();
         services.AddScoped<ITokenService, TokenService>();
+        services.AddScoped<IUserRepository, UserRepository>();
+        services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
         services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(opttions =>
         {
             var tokenKey = config["TokenKey"] ?? throw new Exception("Key does not exists!");
@@ -31,7 +34,9 @@ public static class ApplicationServiceExtentions
                 ValidateAudience = false
 
             };
+
         }
+
         );
 
         return services;
